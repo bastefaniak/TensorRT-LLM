@@ -1123,6 +1123,7 @@ class Cosmos3VFMTransformer(BaseDiffusionModel):
         self,
         hidden_states: torch.Tensor,
         timestep: Optional[torch.Tensor] = None,
+        attention_timestep: Optional[torch.Tensor] = None,
         text_ids: Optional[torch.Tensor] = None,
         text_mask: Optional[torch.Tensor] = None,
         video_shape: Optional[Tuple[int, int, int]] = None,
@@ -1211,7 +1212,7 @@ class Cosmos3VFMTransformer(BaseDiffusionModel):
                 text_ids,
                 text_mask,
                 freqs_und,
-                timestep=timestep,
+                timestep=attention_timestep,
             )
             self.cached_freqs_gen = freqs_gen
 
@@ -1305,9 +1306,9 @@ class Cosmos3VFMTransformer(BaseDiffusionModel):
             if not self.sharder.is_active:
                 k_und = k_und[:, :max_real_len]
                 v_und = v_und[:, :max_real_len]
-                hidden_gen = layer(hidden_gen, k_und, v_und, freqs_gen, timestep=timestep, real_text_lens=real_text_lens)
+                hidden_gen = layer(hidden_gen, k_und, v_und, freqs_gen, timestep=attention_timestep, real_text_lens=real_text_lens)
             else:
-                hidden_gen = layer(hidden_gen, k_und, v_und, freqs_gen, timestep=timestep)
+                hidden_gen = layer(hidden_gen, k_und, v_und, freqs_gen, timestep=attention_timestep)
 
         hidden_gen = self.sharder.gather(hidden_gen, dim=1, unpad_to=S_gen)
 
